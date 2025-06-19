@@ -372,8 +372,7 @@ class DownloadBase(ABC):
             end_time = time.localtime()
 
         self.download_cover(
-            time.strftime(self.gen_download_filename(), end_time if end_time else time.localtime()
-                          ).encode().decode("unicode-escape"))
+            time.strftime(self.gen_download_filename(), end_time if end_time else time.localtime()))
         # 更新数据库中封面存储路径
         with SessionLocal() as db:
             update_cover_path(db, self.database_row_id, self.live_cover_path)
@@ -481,23 +480,33 @@ class DownloadBase(ABC):
         return None
 
     def gen_download_filename(self, is_fmt=False):
-        if self.filename_prefix:  # 判断是否存在自定义录播命名设置
-            filename = (self.filename_prefix.format(streamer=self.fname, title=self.room_title).encode(
-                'unicode-escape').decode()).encode().decode("unicode-escape")
+        """
+        生成合法的下载文件名，支持自定义前缀和时间格式化。
+        :param is_fmt: 是否格式化时间戳（避免重名）
+        :return: 合法的文件名字符串
+        """
+        # 支持自定义命名，否则用默认格式
+        if self.filename_prefix:
+            filename = self.filename_prefix.format(streamer=self.fname, title=self.room_title)
         else:
             filename = f'{self.fname}%Y-%m-%dT%H_%M_%S'
         filename = get_valid_filename(filename)
         if is_fmt:
             file_time = time.time()
             while True:
-                fmt_file_name = time.strftime(filename.encode("unicode-escape").decode(),
-                                              time.localtime(file_time)).encode().decode("unicode-escape")
+                # 这里 filename 可能包含时间格式化符号
+                try:
+                    fmt_file_name = time.strftime(filename, time.localtime(file_time))
+                except Exception as e:
+                    logger.error(f"生成文件名时格式化出错: {e}")
+                    fmt_file_name = filename
+                # 避免重名
                 if os.path.exists(f"{fmt_file_name}.{self.suffix}"):
                     file_time += 1
                 else:
                     filename = fmt_file_name
                     break
-        return filename.encode("unicode-escape").decode()
+        return filename
 
     @staticmethod
     def download_file_rename(old_file_name, file_name):
