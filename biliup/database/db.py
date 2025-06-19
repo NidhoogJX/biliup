@@ -200,7 +200,7 @@ def migrate_via_alembic():
         process_revision_directives=process_revision_directives
     )
     if not scripts:
-        print("数据库已是最新版本")
+        # print("数据库已是最新版本")
         return
     command.upgrade(alembic_cfg, 'head')
     print("检测到旧版数据库，已完成自动迁移")

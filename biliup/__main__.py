@@ -49,7 +49,8 @@ def arg_parser():
                 config.load(args.config)
                 from_config = True
             except FileNotFoundError:
-                print(f'新版本不依赖配置文件，请访问 WebUI 修改配置')
+                None
+                # print(f'新版本不依赖配置文件，请访问 WebUI 修改配置')
             if init(args.no_http, from_config):
                 if from_config:
                     config.save_to_db(db)
