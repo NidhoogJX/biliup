@@ -77,6 +77,22 @@ def get_stream_info_by_filename(db: Session, filename: str) -> dict:
     stream_info_dict["date"] = datetime_to_struct_time(stream_info_dict["date"])  # 将开播时间转回 struct_time 类型
     return stream_info_dict
 
+def get_title_by_filename(db: Session, filename: str) -> str:
+    """
+    根据文件名查询关联的 StreamerInfo 的 title
+    """
+    try:
+        stmt = (
+            select(StreamerInfo.title)
+            .join(FileList, StreamerInfo.id == FileList.streamer_info_id)
+            .where(FileList.file == filename)
+        )
+        result = db.execute(stmt).scalar_one_or_none()
+        return result
+    except Exception as e:
+        logger.debug(f"{e}")
+        return None
+
 
 def add_stream_info(db: Session, name: str, url: str, date: time.struct_time) -> int:
     """添加下载信息, 返回所添加行的 id """
