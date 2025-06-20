@@ -11,7 +11,7 @@ RUN set -eux; \
 # Deploy Biliup
 FROM python:3.12-slim as biliup
 ARG repo_url=https://github.com/NidhoogJX/biliup
-ARG branch_name=master
+ARG branch_name=fix
 ENV TZ=Asia/Shanghai
 EXPOSE 19159/tcp
 VOLUME /opt
